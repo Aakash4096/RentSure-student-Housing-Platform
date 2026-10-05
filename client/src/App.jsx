@@ -8,8 +8,17 @@ import LandlordDashboard from "./pages/LandlordDashboard";
 import AdminDashboard from "./pages/AdminDashboard";
 
 const ProtectedRoute = ({ children }) => {
-  const { token } = useAuth();
-  if (!token) return <Navigate to="/login" />;
+  const { user, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-900 text-white">
+        Loading...
+      </div>
+    );
+  }
+
+  if (!user) return <Navigate to="/login" />;
   return children;
 };
 
@@ -30,7 +39,6 @@ const App = () => {
                 </ProtectedRoute>
               }
             />
-
             <Route
               path="/add-property"
               element={
@@ -39,7 +47,6 @@ const App = () => {
                 </ProtectedRoute>
               }
             />
-
             <Route
               path="/landlord"
               element={
@@ -48,7 +55,6 @@ const App = () => {
                 </ProtectedRoute>
               }
             />
-
             <Route
               path="/admin"
               element={

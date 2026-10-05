@@ -1,16 +1,13 @@
 const jwt = require("jsonwebtoken");
 const config = require("../config/env");
 
-// Verify JWT token
+// Middleware to verify JWT token from cookie
 const protect = (req, res, next) => {
   let token;
 
-  // Get token from Authorization header
-  if (
-    req.headers.authorization &&
-    req.headers.authorization.startsWith("Bearer")
-  ) {
-    token = req.headers.authorization.split(" ")[1];
+  // Read token from httpOnly cookie
+  if (req.cookies && req.cookies.token) {
+    token = req.cookies.token;
   }
 
   if (!token) {
@@ -19,17 +16,14 @@ const protect = (req, res, next) => {
 
   try {
     const decoded = jwt.verify(token, config.jwtSecret);
-
-    // Attach user data to request
     req.user = decoded;
-
     next();
   } catch (error) {
     return res.status(401).json({ message: "Not authorized, token failed" });
   }
 };
 
-// Role-based access control
+// Factory function for role-based access
 const authorize = (...roles) => {
   return (req, res, next) => {
     if (!roles.includes(req.user.role)) {

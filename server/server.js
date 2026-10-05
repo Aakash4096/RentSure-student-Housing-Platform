@@ -2,7 +2,7 @@ const express = require("express");
 const cors = require("cors");
 const helmet = require("helmet");
 const morgan = require("morgan");
-
+const cookieParser = require("cookie-parser");
 const config = require("./src/config/env");
 const { connectDB } = require("./src/config/database");
 const logger = require("./src/utils/logger");
@@ -12,7 +12,7 @@ const app = express();
 
 // Middleware
 app.use(helmet());
-
+app.use(cookieParser());
 app.use(
   cors({
     origin: config.isDevelopment

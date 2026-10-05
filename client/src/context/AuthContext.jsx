@@ -1,16 +1,22 @@
-import { createContext, useState, useContext } from "react";
+import { createContext, useState, useContext, useEffect } from "react";
 import API from "../services/api";
 
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
-  const [token, setToken] = useState(localStorage.getItem("token"));
+  const [loading, setLoading] = useState(true);
+
+  // On app load, check if user is already logged in via cookie
+  useEffect(() => {
+    API.get("/auth/me")
+      .then((res) => setUser(res.data.user))
+      .catch(() => setUser(null))
+      .finally(() => setLoading(false));
+  }, []);
 
   const login = async (email, password) => {
     const { data } = await API.post("/auth/login", { email, password });
-    localStorage.setItem("token", data.token);
-    setToken(data.token);
     setUser(data.user);
     return data;
   };
@@ -22,20 +28,17 @@ export const AuthProvider = ({ children }) => {
       password,
       role,
     });
-    localStorage.setItem("token", data.token);
-    setToken(data.token);
     setUser(data.user);
     return data;
   };
 
-  const logout = () => {
-    localStorage.removeItem("token");
-    setToken(null);
+  const logout = async () => {
+    await API.post("/auth/logout");
     setUser(null);
   };
 
   return (
-    <AuthContext.Provider value={{ user, token, login, register, logout }}>
+    <AuthContext.Provider value={{ user, loading, login, register, logout }}>
       {children}
     </AuthContext.Provider>
   );
